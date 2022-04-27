@@ -4,7 +4,7 @@ public class Leave : AgentBehavior
 {
     public float escapeRadius;
     public float dangerRadius;
-    public float timeToTager = 0.1f;
+    public float timeToTarget = 0.1f;
 
     public override Steering GetSteering()
     {
@@ -19,6 +19,18 @@ public class Leave : AgentBehavior
         else
             reduce = distance / dangerRadius * agent.maxSpeed;
         float targetSpeed = agent.maxSpeed - reduce;
-        return base.GetSteering();
+
+        // steering 값을 설정하고 최대 속도에 맞춰 값을 제한
+        Vector3 desiredVelocity = direction;
+        desiredVelocity.Normalize();
+        desiredVelocity *= targetSpeed;
+        steering.linear = desiredVelocity - agent.velocity;
+        steering.linear /= timeToTarget;
+        if (steering.linear.magnitude > agent.maxAccel)
+        {
+            steering.linear.Normalize();
+            steering.linear *= agent.maxAccel;
+        }
+        return steering;
     }
 }

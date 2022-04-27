@@ -11,6 +11,7 @@ public class Agent : MonoBehaviour
     protected Steering steering;
     // ¹°¸®
     private Rigidbody aRigidbody;
+
     private void Start()
     {
         velocity = Vector3.zero;

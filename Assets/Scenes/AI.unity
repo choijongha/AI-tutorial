@@ -158,9 +158,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1635563733}
-  escapeRadius: 1
-  dangerRadius: 2
-  timeToTager: 0.1
+  escapeRadius: 5
+  dangerRadius: 10
+  timeToTarget: 0.1
 --- !u!114 &31898276
 MonoBehaviour:
   m_ObjectHideFlags: 0
