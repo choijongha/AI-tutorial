@@ -19,9 +19,10 @@ public class Agent : MonoBehaviour
 
         aRigidbody = GetComponent<Rigidbody>();
     }
-    public void SetSteering(Steering steering)
+    public void SetSteering(Steering steering, float weight)
     {
-        this.steering = steering;
+        this.steering.linear += (weight * steering.linear);
+        this.steering.angular += (weight * steering.angular);
     }
     // 현재 값에 따라 이동 뼈대
     public virtual void Update()

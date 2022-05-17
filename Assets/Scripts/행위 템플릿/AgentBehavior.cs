@@ -11,13 +11,20 @@ public class AgentBehavior : MonoBehaviour
     public float maxRotation;
     public float maxAngularAccel;
 
+    // 섞기 기술을 활용해 새로운 종류의 하이브리드(hybrid)에이전트가 필요할 때마다
+    // 새로운 스크립트 작성 없이 새로운 행위들을 추가하거나 섞을 수 있다.
+    // 가중치를 통한 섞기 기술은 1장에서 가장 유용한 기술 중 하나.
+    // 강력함과 구현에 들어가는 적은 노력 때문에 아마도 가장 널리 쓰이는 행위 섞기 접근 방식.
+    public float weight = 1.0f;
     public virtual void Awake()
     {
         agent = gameObject.GetComponent<Agent>();
     }
     public virtual void Update()
     {
-        agent.SetSteering(GetSteering());
+        // 가중치(weight)값들은 steering 행위 결괏값을 증폭시키는 데 사용되고,
+        // 주요 키값(steering)구조에 더해진다.
+        agent.SetSteering(GetSteering(), weight);
     }
     public  virtual Steering GetSteering()
     {
