@@ -40,4 +40,51 @@ public class Projectile : MonoBehaviour
         transform.position = firePos;
         set = true;
     }
+
+    /// <summary>
+    /// 착륙 지점을 예측하기에 앞서 발사체가 땅에 부딪히기까지 (혹은 특징 지점에 도달하기까지) 남은 시간을 아는 것이 중요하다.
+    /// 착륙 시간 계산 함수.
+    /// </summary>
+    /// <param name="height"></param>
+    /// <returns></returns>
+    public float GetLandingTime(float height = 0.0f)
+    {
+        Vector3 position = transform.position;
+        float time = 0.0f;
+        float valueInt = (direction.y * direction.y) * (speed * speed);
+        valueInt = valueInt - (Physics.gravity.y * 2 * (position.y - height));
+        valueInt = Mathf.Sqrt(valueInt);
+        float valueAdd = (-direction.y) * speed;
+        float valueSub = (-direction.y) * speed;
+        valueAdd = (valueAdd + valueInt) / Physics.gravity.y;
+        valueSub = (valueSub - valueInt) / Physics.gravity.y;
+        // 방정식의 해가 하나이거나 둘 혹은 없을 수도 있기 때문에 값이 NaN인지 반드시 검증.
+        if (float.IsNaN(valueAdd) && !float.IsNaN(valueSub))
+            return valueSub;
+        else if (!float.IsNaN(valueAdd) && float.IsNaN(valueSub))
+            return valueAdd;
+        else if (float.IsNaN(valueAdd) && float.IsNaN(valueSub))
+            return -1.0f;
+        time = Mathf.Max(valueAdd, valueSub);
+        return time;
+    }
+    /// <summary>
+    /// 착륙 지점을 예측하는 함수.
+    /// 고정된 높이와 주어진 발사체의 현재 위치와 속력으로 이전 예제로부터 만든 방정식을 풀고,
+    /// 주어진 높이에 도달하는 데 걸릴 시간을 구할 수 있다.
+    /// </summary>
+    /// <param name="height"></param>
+    /// <returns></returns>
+    public Vector3 GetLandingPos(float height = 0.0f)
+    {
+        Vector3 landingPos = Vector3.zero;
+        float time = GetLandingTime();
+        // 착륙까지 0보다 작은 시간이 남아 있을 경우, 발사체가 목표 높이에 도달할 수 없음.
+        if (time < 0.0f)
+            return landingPos;
+        landingPos.y = height;
+        landingPos.x = firePos.x + direction.x * speed * time;
+        landingPos.z = firePos.z + direction.z * speed * time;
+        return landingPos;
+    }
 }
