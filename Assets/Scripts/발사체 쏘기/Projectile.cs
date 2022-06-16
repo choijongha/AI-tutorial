@@ -10,6 +10,56 @@ using UnityEngine;
 // https://learn.unity.com/search/?k=%5B%22q%3Apooling%22%5D
 public class Projectile : MonoBehaviour
 {
+    /// <summary>
+    /// 필요한 방향을 얻기 위해 고정된 속도가 주어지면 해당하는 이차 방정식을 푼다.(적어도 하나의 시간 값은 유효해야 한다.)
+    /// 이 방향 벡터는 정규화할 필요가 없는데, 발사체를 설정하는 동안 이미 정규화했기 때문.
+    /// </summary>
+    /// <param name="startPos">시작위치</param>
+    /// <param name="endPos">끝위치</param>
+    /// <param name="speed">속도</param>
+    /// <param name="isWall">벽과 같은 장애물을 넘어 발사해야 할 때</param>
+    /// <returns></returns>
+    public static Vector3 GetFireDirection(Vector3 startPos, Vector3 endPos, float speed, bool isWall)
+    {
+        // 발사체 착륙 지점 관련 이차 방정식의 해를 구한다.
+        Vector3 direction = Vector3.zero;
+        Vector3 delta = endPos - startPos;
+        float a = Vector3.Dot(Physics.gravity, Physics.gravity);
+        float b = -4 * (Vector3.Dot(Physics.gravity, delta) + speed * speed);
+        float c = 4 * Vector3.Dot(delta, delta);
+        if (4 * a * c > b * b)
+            return direction;
+        float time0 = Mathf.Sqrt((-b + Mathf.Sqrt(b * b - 4 * a * c)) / (2 * a));
+        float time1 = Mathf.Sqrt((-b - Mathf.Sqrt(b * b - 4 * a * c)) / (2 * a));
+
+        // 주어진 파라미터를 토대로 발사체를 발사할 수 있으면, 영이 안닌 방향 벡터를 반환.
+        float time;
+        if (time0 < 0.0f)
+        {
+            if (time1 < 0)
+                return direction;
+            time = time1;
+        }
+        else
+        {
+            if (time1 < 0)
+                time = time0;
+            else
+                time = Mathf.Min(time0, time1);
+        }
+        // 시간 값이 음수일 때, 빈 방향(blank direction)을 반환하는 것을 고려하라. 이것은 속도가 충분하지 않다는 것을 의미.
+        // 극복하는 방법은 다른 속도들을 테스트하는 함수를 정의하고, 발사체를 발사하는 것.
+        // 또 다른 향상된 방법은 두 가지 유효한 시간이 존재할 때(이 의미는 두 종류의 포물선이 가능하다는 것)
+        // 그리고 벽과 같은 장애물을 넘어 발사해야 할 때에는 bool 파라미터를 추가한다.
+        if (isWall)
+            time = Mathf.Max(time0, time1);
+        else
+            time = Mathf.Min(time0, time1);
+
+        direction = 2 * delta - Physics.gravity * (time * time);
+        direction = direction / (2 * speed * time);
+        return direction;
+    }
     private bool set = false;
     private Vector3 firePos;
     private Vector3 direction;
@@ -87,4 +137,5 @@ public class Projectile : MonoBehaviour
         landingPos.z = firePos.z + direction.z * speed * time;
         return landingPos;
     }
+    
 }
